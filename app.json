@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "SIMARA",
+    "slug": "simara",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e3a8a"
+    },
+    "ios": {
+      "bundleIdentifier": "id.sch.smkmaarifnu1wanasari",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "id.sch.smkmaarifnu1wanasari",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo/logo_nobg.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "INTERNET"
+      ],
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./assets/logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "27a30e64-f7f2-4ba7-93ea-28ccf373aade"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}

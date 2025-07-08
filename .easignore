@@ -1,0 +1,14 @@
+node_modules/
+android/
+.expo/
+.git/
+*.log
+*.tgz
+*.tar.gz
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.apk
+*.aab
+*.ipa

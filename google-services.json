@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "444588763749",
+    "project_id": "expo-firebase-f28df",
+    "storage_bucket": "expo-firebase-f28df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:444588763749:android:5ae27f5975be4ac615b48c",
+        "android_client_info": {
+          "package_name": "id.sch.smkmaarifnu1wanasari"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBW4V8LafNVkvhkQlfXBKBMT0Hd8uHjYAM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
