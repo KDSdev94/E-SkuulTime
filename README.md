@@ -105,16 +105,6 @@ npm run android             # Jalankan di Android
 npm run ios                 # Jalankan di iOS
 npm run web                 # Jalankan di web browser
 
-# Database Management
-node scripts/addStudents.js              # Tambah data siswa
-node scripts/generateDummyGuru.js       # Generate data guru dummy
-node scripts/cleanNotifications.js       # Bersihkan notifikasi
-node scripts/publishAllSchedules.js     # Publish semua jadwal
-node scripts/fixSchedules.js            # Perbaiki jadwal
-node scripts/resetScheduleStatus.js     # Reset status jadwal
-node scripts/sendScheduleNotifications.js # Kirim notifikasi jadwal
-```
-
 ## Database Schema
 
 ### Collections Firestore
