@@ -34,21 +34,17 @@ E-SkuulTime adalah sistem manajemen sekolah digital yang komprehensif, dibangun 
 
 ### Instalasi
 
-`ash
-
+```bash
 # Clone repository
-
 git clone https://github.com/KDSdev94/E-SkuulTime.git
-cd EXPO e-skuultime
+cd EXPO\ e-skuultime
 
 # Install dependencies
-
 npm install
 
 # Jalankan aplikasi
-
 npx expo start
-`
+```
 
 ### Menjalankan di Device
 
@@ -65,57 +61,59 @@ npx expo start
 3. Setup Firestore rules dan indexes
 4. Update konfigurasi di config/firebase.js
 
-`javascript
+```javascript
 // config/firebase.js
 const firebaseConfig = {
-  apiKey: 'your-api-key',
-  authDomain: 'your-project.firebaseapp.com',
-  projectId: 'your-project-id',
-  storageBucket: 'your-project.appspot.com',
-  messagingSenderId: '123456789',
-  appId: 'your-app-id'
+  apiKey: "your-api-key",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "your-app-id",
 };
-`
+```
 
 ## Struktur Proyek
 
-`E-SkuulTime/
-+-- Pages/                    # Halaman aplikasi
-�   +-- admin/               # Halaman admin
-�   +-- guru/                # Halaman guru
-�   +-- murid/               # Halaman siswa
-�   +-- Login/               # Halaman login
-�   +-- profile/             # Halaman profil
-+-- components/              # Komponen UI reusable
-+-- context/                 # React Context providers
-+-- services/                # Service layer & API calls
-+-- scripts/                 # Utility scripts
-+-- utils/                   # Helper functions
-+-- styles/                  # Style definitions
-+-- hooks/                   # Custom React hooks
-+-- stores/                  # State management
-+-- config/                  # Konfigurasi aplikasi
-+-- App.js                   # Entry point
-+-- package.json             # Dependencies`
+```
+E-SkuulTime/
+├── Pages/                    # Halaman aplikasi
+│   ├── admin/               # Halaman admin
+│   ├── guru/                # Halaman guru
+│   ├── murid/               # Halaman siswa
+│   ├── Login/               # Halaman login
+│   └── profile/             # Halaman profil
+├── components/              # Komponen UI reusable
+├── context/                 # React Context providers
+├── services/                # Service layer & API calls
+├── scripts/                 # Utility scripts
+├── utils/                   # Helper functions
+├── styles/                  # Style definitions
+├── hooks/                   # Custom React hooks
+├── stores/                  # State management
+├── config/                  # Konfigurasi aplikasi
+├── App.js                   # Entry point
+└── package.json             # Dependencies
+```
 
 ## Scripts Tersedia
 
-`ash
-
+```bash
 # Development
-
-npm start # Jalankan Expo dev server
-npm run android # Jalankan di Android
-npm run ios # Jalankan di iOS
-npm run web # Jalankan di web browser
+npm start                    # Jalankan Expo dev server
+npm run android             # Jalankan di Android
+npm run ios                 # Jalankan di iOS
+npm run web                 # Jalankan di web browser
 
 # Database Management
-
-node scripts/addStudents.js # Tambah data siswa
-node scripts/generateDummyGuru.js # Generate data guru dummy
-node scripts/cleanNotifications.js # Bersihkan notifikasi
-node scripts/publishAllSchedules.js # Publish semua jadwal
-`
+node scripts/addStudents.js              # Tambah data siswa
+node scripts/generateDummyGuru.js       # Generate data guru dummy
+node scripts/cleanNotifications.js       # Bersihkan notifikasi
+node scripts/publishAllSchedules.js     # Publish semua jadwal
+node scripts/fixSchedules.js            # Perbaiki jadwal
+node scripts/resetScheduleStatus.js     # Reset status jadwal
+node scripts/sendScheduleNotifications.js # Kirim notifikasi jadwal
+```
 
 ## Database Schema
 
@@ -170,9 +168,9 @@ _Tambahkan screenshot aplikasi di sini_
 ## Contributing
 
 1. Fork repository ini
-2. Buat branch fitur: git checkout -b feature/amazing-feature
-3. Commit perubahan: git commit -m 'Add amazing feature'
-4. Push ke branch: git push origin feature/amazing-feature
+2. Buat branch fitur: `git checkout -b feature/amazing-feature`
+3. Commit perubahan: `git commit -m 'Add amazing feature'`
+4. Push ke branch: `git push origin feature/amazing-feature`
 5. Buka Pull Request
 
 ### Coding Standards
@@ -196,5 +194,5 @@ Hak cipta 2024 E-SkuulTime. All rights reserved.
 
 ---
 
-Made with love by E-SkuulTime Team
-Star this repo if you find it helpful!
+Made with ❤️ by E-SkuulTime Team  
+⭐ Star this repo if you find it helpful!
