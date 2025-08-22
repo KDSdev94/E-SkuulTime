@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular Background -->
+  <circle cx="100" cy="100" r="90" fill="#FF6B6B" fill-opacity="0.1" stroke="#FF6B6B" stroke-width="2"/>
+  
+  <!-- Teacher Figure -->
+  <!-- Head -->
+  <circle cx="100" cy="75" r="18" fill="#FFE4C4"/>
+  
+  <!-- Hair -->
+  <path d="M82 65C82 55 88 50 100 50C112 50 118 55 118 65C118 70 115 74 110 76C105 78 95 78 90 76C85 74 82 70 82 65Z" fill="#8B4513"/>
+  
+  <!-- Eyes -->
+  <circle cx="95" cy="73" r="2" fill="#333"/>
+  <circle cx="105" cy="73" r="2" fill="#333"/>
+  
+  <!-- Smile -->
+  <path d="M95 80C95 82 97 84 100 84C103 84 105 82 105 80" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Body -->
+  <rect x="85" y="93" width="30" height="35" rx="3" fill="#4169E1"/>
+  
+  <!-- Arms -->
+  <rect x="75" y="98" width="10" height="20" rx="5" fill="#FFE4C4"/>
+  <rect x="115" y="98" width="10" height="20" rx="5" fill="#FFE4C4"/>
+  
+  <!-- Tie -->
+  <polygon points="98,93 102,93 104,110 96,110" fill="#DC143C"/>
+  
+  <!-- Book in hand -->
+  <rect x="70" y="105" width="8" height="10" rx="1" fill="#228B22" transform="rotate(-15 74 110)"/>
+  <rect x="71" y="106" width="6" height="1" fill="#FFF" transform="rotate(-15 74 110)"/>
+  <rect x="71" y="108" width="6" height="1" fill="#FFF" transform="rotate(-15 74 110)"/>
+  <rect x="71" y="110" width="6" height="1" fill="#FFF" transform="rotate(-15 74 110)"/>
+  
+  <!-- Apple in other hand -->
+  <circle cx="120" cy="110" r="4" fill="#FF4500"/>
+  <path d="M120 106C120 106 121 105 122 106" stroke="#228B22" stroke-width="1" fill="none"/>
+  
+  <!-- Legs -->
+  <rect x="90" y="128" width="8" height="25" rx="4" fill="#2F4F4F"/>
+  <rect x="102" y="128" width="8" height="25" rx="4" fill="#2F4F4F"/>
+  
+  <!-- Shoes -->
+  <ellipse cx="94" cy="155" rx="6" ry="3" fill="#000"/>
+  <ellipse cx="106" cy="155" rx="6" ry="3" fill="#000"/>
+  
+  <!-- Graduation cap -->
+  <rect x="88" y="58" width="24" height="3" rx="1" fill="#000"/>
+  <polygon points="100,55 95,58 105,58" fill="#000"/>
+  <rect x="103" y="52" width="1" height="8" fill="#000"/>
+  <polygon points="104,52 102,50 106,50" fill="#FFD700"/>
+</svg>

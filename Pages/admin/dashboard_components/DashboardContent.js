@@ -12,13 +12,11 @@ import RecentActivities from './RecentActivities';
 
 const { width } = Dimensions.get('window');
 
-export default function DashboardContent({ dashboardStats, isLoading, onQuickAction }) {
-  // Load Google Fonts
+export default function DashboardContent({ dashboardStats, isLoading, onQuickAction, userRole }) {
   let [fontsLoaded] = useFonts({
     Nunito_500Medium,
   });
 
-  // Don't render until fonts are loaded
   if (!fontsLoaded) {
     return null;
   }
@@ -39,7 +37,7 @@ export default function DashboardContent({ dashboardStats, isLoading, onQuickAct
       <View style={{ height: spacing }} />
       
       {/* Statistics Cards */}
-      <StatisticsCards dashboardStats={dashboardStats} />
+      <StatisticsCards dashboardStats={dashboardStats} userRole={userRole} />
       <View style={{ height: spacing }} />
       <QuickActions onQuickAction={onQuickAction} />
       <View style={{ height: spacing }} />

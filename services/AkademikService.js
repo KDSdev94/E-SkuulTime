@@ -1,4 +1,4 @@
-import { db, storage } from '../config/firebase';
+import { db } from '../config/firebase.js';
 import { 
   collection, 
   doc, 
@@ -14,38 +14,86 @@ import {
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 class AkademikService {
-  // Collection names
   static muridCollection = 'murid';
   static guruCollection = 'guru';
   static kelasCollection = 'kelas';
   static jadwalCollection = 'jadwal';
-  static absensiCollection = 'absensi';
   static adminCollection = 'admin';
 
-  // === GURU OPERATIONS ===
-
-  // Add new guru
   static async addGuru(guru) {
     try {
-      // Check if NIP already exists
+      console.log('Data guru yang diterima:', guru);
+      
+      // Validate required fields to prevent undefined values
+      if (!guru.nip || guru.nip === undefined || guru.nip === '') {
+        throw new Error('NIP tidak boleh kosong');
+      }
+      
+      if (!guru.nama || guru.nama === undefined || guru.nama === '') {
+        throw new Error('Nama guru tidak boleh kosong');
+      }
+      
+      if (!guru.email || guru.email === undefined || guru.email === '') {
+        throw new Error('Email tidak boleh kosong');
+      }
+      
+      // Clean up ALL fields to prevent undefined values
+      const cleanGuru = {
+        nip: guru.nip,
+        nama: guru.nama,
+        email: guru.email,
+        waliKelas: guru.waliKelas || '',
+        urlFoto: guru.urlFoto || '',
+        // Add other common fields that might be undefined
+        alamat: guru.alamat || '',
+        noTelepon: guru.noTelepon || '',
+        jenisKelamin: guru.jenisKelamin || '',
+        tanggalLahir: guru.tanggalLahir || '',
+        statusKepegawaian: guru.statusKepegawaian || '',
+        bidangKeahlian: guru.bidangKeahlian || '',
+        namaLengkap: guru.namaLengkap || guru.nama || '',
+        // Add timestamp
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      };
+      
+      console.log('Data guru yang sudah dibersihkan:', cleanGuru);
+      
+      // Check for any undefined values in cleanGuru
+      const undefinedFields = Object.entries(cleanGuru)
+        .filter(([key, value]) => value === undefined)
+        .map(([key]) => key);
+      
+      if (undefinedFields.length > 0) {
+        console.error('Field yang masih undefined:', undefinedFields);
+        throw new Error(`Field berikut masih undefined: ${undefinedFields.join(', ')}`);
+      }
+      
       const existingNipQuery = query(
         collection(db, this.guruCollection),
-        where('nip', '==', guru.nip)
+        where('nip', '==', cleanGuru.nip)
       );
       const existingNip = await getDocs(existingNipQuery);
 
       if (!existingNip.empty) {
-        throw new Error(`NIP ${guru.nip} sudah terdaftar`);
+        throw new Error(`NIP ${cleanGuru.nip} sudah terdaftar`);
       }
 
-      const docRef = await addDoc(collection(db, this.guruCollection), {
-        ...guru,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
+      const existingEmailQuery = query(
+        collection(db, this.guruCollection),
+        where('email', '==', cleanGuru.email)
+      );
+      const existingEmail = await getDocs(existingEmailQuery);
+
+      if (!existingEmail.empty) {
+        throw new Error(`Email ${cleanGuru.email} sudah terdaftar`);
+      }
+
+      console.log('Akan menyimpan data guru:', cleanGuru);
+      const docRef = await addDoc(collection(db, this.guruCollection), cleanGuru);
+      console.log('Guru berhasil disimpan dengan ID:', docRef.id);
       
       return docRef.id;
     } catch (error) {
@@ -54,7 +102,6 @@ class AkademikService {
     }
   }
 
-  // Update guru
   static async updateGuru(id, guru) {
     try {
       const docRef = doc(db, this.guruCollection, id);
@@ -63,23 +110,21 @@ class AkademikService {
         updatedAt: Timestamp.now()
       });
     } catch (error) {
-      console.error('Error updating guru:', error);
+      
       throw error;
     }
   }
 
-  // Delete guru
   static async deleteGuru(id) {
     try {
       const docRef = doc(db, this.guruCollection, id);
       await deleteDoc(docRef);
     } catch (error) {
-      console.error('Error deleting guru:', error);
+      
       throw error;
     }
   }
 
-  // Get all guru
   static async getAllGuru() {
     try {
       const q = query(
@@ -93,17 +138,13 @@ class AkademikService {
         ...doc.data()
       }));
     } catch (error) {
-      console.error('Error getting all guru:', error);
+      
       return [];
     }
   }
 
-  // === KELAS OPERATIONS ===
-
-  // Add new kelas
   static async addKelas(kelas) {
     try {
-      // Check if class name already exists for the same academic year
       const existingKelasQuery = query(
         collection(db, this.kelasCollection),
         where('namaKelas', '==', kelas.namaKelas),
@@ -123,12 +164,11 @@ class AkademikService {
       
       return docRef.id;
     } catch (error) {
-      console.error('Error adding kelas:', error);
+      
       throw error;
     }
   }
 
-  // Update kelas
   static async updateKelas(id, kelas) {
     try {
       const docRef = doc(db, this.kelasCollection, id);
@@ -137,23 +177,21 @@ class AkademikService {
         updatedAt: Timestamp.now()
       });
     } catch (error) {
-      console.error('Error updating kelas:', error);
+      
       throw error;
     }
   }
 
-  // Delete kelas
   static async deleteKelas(id) {
     try {
       const docRef = doc(db, this.kelasCollection, id);
       await deleteDoc(docRef);
     } catch (error) {
-      console.error('Error deleting kelas:', error);
+      
       throw error;
     }
   }
 
-  // Get all kelas
   static async getAllKelas() {
     try {
       const q = query(
@@ -167,17 +205,13 @@ class AkademikService {
         ...doc.data()
       }));
     } catch (error) {
-      console.error('Error getting all kelas:', error);
+      
       return [];
     }
   }
 
-  // === JADWAL OPERATIONS ===
-
-  // Add new jadwal
   static async addJadwal(jadwal) {
     try {
-      // Check for schedule conflicts
       const existingJadwalQuery = query(
         collection(db, this.jadwalCollection),
         where('hari', '==', jadwal.hari),
@@ -201,12 +235,11 @@ class AkademikService {
       
       return docRef.id;
     } catch (error) {
-      console.error('Error adding jadwal:', error);
+      
       throw error;
     }
   }
 
-  // Update jadwal
   static async updateJadwal(id, jadwal) {
     try {
       const docRef = doc(db, this.jadwalCollection, id);
@@ -215,23 +248,21 @@ class AkademikService {
         updatedAt: Timestamp.now()
       });
     } catch (error) {
-      console.error('Error updating jadwal:', error);
+      
       throw error;
     }
   }
 
-  // Delete jadwal
   static async deleteJadwal(id) {
     try {
       const docRef = doc(db, this.jadwalCollection, id);
       await deleteDoc(docRef);
     } catch (error) {
-      console.error('Error deleting jadwal:', error);
+      
       throw error;
     }
   }
 
-  // Get jadwal by kelas
   static async getJadwalByKelas(kelasId) {
     try {
       const q = query(
@@ -245,7 +276,6 @@ class AkademikService {
         ...doc.data()
       }));
       
-      // Sort locally
       jadwalList.sort((a, b) => {
         const hariComparison = this.getHariIndex(a.hari) - this.getHariIndex(b.hari);
         if (hariComparison !== 0) return hariComparison;
@@ -254,12 +284,11 @@ class AkademikService {
 
       return jadwalList;
     } catch (error) {
-      console.error('Error getting jadwal by kelas:', error);
+      
       return [];
     }
   }
 
-  // Get jadwal by guru
   static async getJadwalByGuru(guruId) {
     try {
       const q = query(
@@ -273,7 +302,6 @@ class AkademikService {
         ...doc.data()
       }));
       
-      // Sort locally
       jadwalList.sort((a, b) => {
         const hariComparison = this.getHariIndex(a.hari) - this.getHariIndex(b.hari);
         if (hariComparison !== 0) return hariComparison;
@@ -282,12 +310,11 @@ class AkademikService {
 
       return jadwalList;
     } catch (error) {
-      console.error('Error getting jadwal by guru:', error);
+      
       return [];
     }
   }
 
-  // Get all jadwal
   static async getAllJadwal() {
     try {
       const querySnapshot = await getDocs(collection(db, this.jadwalCollection));
@@ -297,7 +324,6 @@ class AkademikService {
         ...doc.data()
       }));
       
-      // Sort locally
       jadwalList.sort((a, b) => {
         const hariComparison = this.getHariIndex(a.hari) - this.getHariIndex(b.hari);
         if (hariComparison !== 0) return hariComparison;
@@ -306,12 +332,11 @@ class AkademikService {
 
       return jadwalList;
     } catch (error) {
-      console.error('Error getting all jadwal:', error);
+      
       return [];
     }
   }
   
-  // Helper function to get day index for sorting
   static getHariIndex(hari) {
     switch (hari.toLowerCase()) {
       case 'senin':
@@ -333,9 +358,7 @@ class AkademikService {
     }
   }
 
-  // Helper function to check schedule conflicts
   static isBentrokWith(jadwal1, jadwal2) {
-    // Check if same day, same time slot, and overlapping classes or teachers
     return (
       jadwal1.hari === jadwal2.hari &&
       jadwal1.jamKe === jadwal2.jamKe &&
@@ -343,141 +366,13 @@ class AkademikService {
     );
   }
 
-  // === ABSENSI OPERATIONS ===
-
-  // Add absensi
-  static async addAbsensi(absensi) {
-    try {
-      const docRef = await addDoc(collection(db, this.absensiCollection), {
-        ...absensi,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
-      
-      return docRef.id;
-    } catch (error) {
-      console.error('Error adding absensi:', error);
-      return null;
-    }
-  }
-
-  // Update absensi
-  static async updateAbsensi(id, absensi) {
-    try {
-      const docRef = doc(db, this.absensiCollection, id);
-      await updateDoc(docRef, {
-        ...absensi,
-        updatedAt: Timestamp.now()
-      });
-    } catch (error) {
-      console.error('Error updating absensi:', error);
-      throw error;
-    }
-  }
-
-  // Get absensi by kelas and date
-  static async getAbsensiByKelasAndDate(kelasId, tanggal) {
-    try {
-      const startOfDay = new Date(tanggal.getFullYear(), tanggal.getMonth(), tanggal.getDate());
-      const endOfDay = new Date(tanggal.getFullYear(), tanggal.getMonth(), tanggal.getDate(), 23, 59, 59);
-
-      const q = query(
-        collection(db, this.absensiCollection),
-        where('kelasId', '==', kelasId),
-        where('tanggal', '>=', Timestamp.fromDate(startOfDay)),
-        where('tanggal', '<=', Timestamp.fromDate(endOfDay)),
-        orderBy('tanggal'),
-        orderBy('namaSiswa')
-      );
-      
-      const querySnapshot = await getDocs(q);
-      
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    } catch (error) {
-      console.error('Error getting absensi by kelas and date:', error);
-      return [];
-    }
-  }
-
-  // Get statistik absensi by siswa
-  static async getStatistikAbsensiBySiswa(siswaId, semester, tahunAjaran) {
-    try {
-      const q = query(
-        collection(db, this.absensiCollection),
-        where('siswaId', '==', siswaId),
-        where('semester', '==', semester),
-        where('tahunAjaran', '==', tahunAjaran)
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const absensiList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      return this.calculateStatistikAbsensi(absensiList);
-    } catch (error) {
-      console.error('Error getting statistik absensi:', error);
-      return {
-        totalHadir: 0,
-        totalIzin: 0,
-        totalSakit: 0,
-        totalAlpa: 0,
-        totalTerlambat: 0,
-        totalPertemuan: 0,
-      };
-    }
-  }
-
-  // Calculate statistik absensi
-  static calculateStatistikAbsensi(absensiList) {
-    const stats = {
-      totalHadir: 0,
-      totalIzin: 0,
-      totalSakit: 0,
-      totalAlpa: 0,
-      totalTerlambat: 0,
-      totalPertemuan: absensiList.length,
-    };
-
-    absensiList.forEach(absensi => {
-      switch (absensi.statusAbsensi) {
-        case 'Hadir':
-          stats.totalHadir++;
-          break;
-        case 'Izin':
-          stats.totalIzin++;
-          break;
-        case 'Sakit':
-          stats.totalSakit++;
-          break;
-        case 'Alpa':
-          stats.totalAlpa++;
-          break;
-        case 'Terlambat':
-          stats.totalTerlambat++;
-          break;
-      }
-    });
-
-    return stats;
-  }
-
-  // === DASHBOARD STATISTICS ===
-
-  // Get dashboard statistics
   static async getDashboardStatistics() {
     try {
-      // Get total counts
       const muridSnapshot = await getDocs(collection(db, this.muridCollection));
       const guruSnapshot = await getDocs(collection(db, this.guruCollection));
       const kelasSnapshot = await getDocs(collection(db, this.kelasCollection));
       const mapelCount = 30; // Fixed count as per original
 
-      // Get murid statistics by jurusan
       const muridList = muridSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -487,7 +382,6 @@ class AkademikService {
       const muridTKR = muridList.filter(m => m.jurusan === 'TKR').length;
       const muridAktif = muridList.filter(m => m.statusSiswa === 'Aktif').length;
 
-      // Get guru statistics by status
       const guruList = guruSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -495,28 +389,6 @@ class AkademikService {
 
       const guruAktif = guruList.length; // All guru considered active
       const guruPNS = guruList.filter(g => g.statusKepegawaian === 'PNS').length;
-
-      // Get today's attendance
-      const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-
-      const absensiHariIniQuery = query(
-        collection(db, this.absensiCollection),
-        where('tanggal', '>=', Timestamp.fromDate(startOfDay)),
-        where('tanggal', '<=', Timestamp.fromDate(endOfDay))
-      );
-      
-      const absensiHariIni = await getDocs(absensiHariIniQuery);
-      const absensiList = absensiHariIni.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      const hadirHariIni = absensiList.filter(a => a.statusAbsensi === 'Hadir').length;
-      const izinHariIni = absensiList.filter(a => a.statusAbsensi === 'Izin').length;
-      const sakitHariIni = absensiList.filter(a => a.statusAbsensi === 'Sakit').length;
-      const alpaHariIni = absensiList.filter(a => a.statusAbsensi === 'Alpa').length;
 
       return {
         totalMurid: muridSnapshot.docs.length,
@@ -528,112 +400,19 @@ class AkademikService {
         muridAktif,
         guruAktif,
         guruPNS,
-        absensiHariIni: {
-          hadir: hadirHariIni,
-          izin: izinHariIni,
-          sakit: sakitHariIni,
-          alpa: alpaHariIni,
-          total: absensiList.length,
-        },
       };
     } catch (error) {
-      console.error('Error getting dashboard statistics:', error);
-      return {};
-    }
-  }
-
-  // === LAPORAN OPERATIONS ===
-
-  // Generate laporan absensi
-  static async generateLaporanAbsensi({ kelasId, startDate, endDate }) {
-    try {
-      const q = query(
-        collection(db, this.absensiCollection),
-        where('kelasId', '==', kelasId),
-        where('tanggal', '>=', Timestamp.fromDate(startDate)),
-        where('tanggal', '<=', Timestamp.fromDate(endDate)),
-        orderBy('tanggal'),
-        orderBy('namaSiswa')
-      );
       
-      const querySnapshot = await getDocs(q);
-      const absensiList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      // Group by siswa
-      const absensiPerSiswa = {};
-      for (const absensi of absensiList) {
-        if (!absensiPerSiswa[absensi.siswaId]) {
-          absensiPerSiswa[absensi.siswaId] = [];
-        }
-        absensiPerSiswa[absensi.siswaId].push(absensi);
-      }
-
-      // Calculate statistics per siswa
-      const laporanPerSiswa = [];
-      for (const [siswaId, absensiSiswa] of Object.entries(absensiPerSiswa)) {
-        const statistik = this.calculateStatistikAbsensi(absensiSiswa);
-
-        laporanPerSiswa.push({
-          siswaId,
-          namaSiswa: absensiSiswa[0].namaSiswa,
-          statistik,
-          absensiDetail: absensiSiswa,
-        });
-      }
-
-      return {
-        periode: {
-          startDate,
-          endDate,
-        },
-        kelasId,
-        namaKelas: absensiList.length > 0 ? absensiList[0].namaKelas : '',
-        totalPertemuan: absensiList.length,
-        laporanPerSiswa,
-        generatedAt: new Date(),
-      };
-    } catch (error) {
-      console.error('Error generating laporan absensi:', error);
       return {};
     }
   }
 
-  // === STORAGE OPERATIONS ===
 
-  // Upload file
-  static async uploadFile(file, folder, fileName) {
-    try {
-      const storageRef = ref(storage, `${folder}/${fileName}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      return await getDownloadURL(snapshot.ref);
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      return null;
-    }
-  }
-
-  // Delete file
-  static async deleteFile(fileUrl) {
-    try {
-      const fileRef = ref(storage, fileUrl);
-      await deleteObject(fileRef);
-    } catch (error) {
-      console.error('Error deleting file:', error);
-    }
-  }
-
-  // === UTILITY FUNCTIONS ===
-
-  // Get current academic year
   static getCurrentAcademicYear() {
     const now = new Date();
     const currentYear = now.getFullYear();
     const nextYear = currentYear + 1;
     
-    // Academic year starts in July
     if (now.getMonth() >= 6) { // July is month 6 (0-indexed)
       return `${currentYear}/${nextYear.toString().substring(2)}`;
     } else {
@@ -641,31 +420,25 @@ class AkademikService {
     }
   }
 
-  // Get current semester
   static getCurrentSemester() {
     const now = new Date();
     const month = now.getMonth() + 1; // Convert to 1-indexed
-    // Semester ganjil: July - December
-    // Semester genap: January - June
     return (month >= 7 && month <= 12) ? 'Ganjil' : 'Genap';
   }
 
-  // Initialize default data
   static async initializeDefaultData() {
     try {
-      // Initialize default admin if not exists
       const adminSnapshot = await getDocs(collection(db, this.adminCollection));
       
       if (adminSnapshot.empty) {
         const batch = writeBatch(db);
         
-        // Add super admin
         const superAdminRef = doc(collection(db, this.adminCollection));
         batch.set(superAdminRef, {
           username: 'superadmin',
           password: 'admin123', // Note: In production, use proper hashing
           namaLengkap: 'Super Administrator',
-          email: 'superadmin@simara.com',
+          email: 'superadmin@eskuultime.com',
           role: 'superadmin',
           isActive: true,
           createdAt: Timestamp.now(),
@@ -673,13 +446,12 @@ class AkademikService {
           lastLogin: null
         });
         
-        // Add default admin
         const adminRef = doc(collection(db, this.adminCollection));
         batch.set(adminRef, {
           username: 'admin',
           password: 'admin123', // Note: In production, use proper hashing
           namaLengkap: 'Administrator',
-          email: 'admin@simara.com',
+          email: 'admin@eskuultime.com',
           role: 'admin',
           isActive: true,
           createdAt: Timestamp.now(),
@@ -688,16 +460,13 @@ class AkademikService {
         });
         
         await batch.commit();
-        console.log('Default admin accounts initialized successfully');
+        
       }
     } catch (error) {
-      console.error('Error initializing default data:', error);
+      
     }
   }
-  
-  // === ADMIN OPERATIONS ===
-  
-  // Login admin
+
   static async loginAdmin(username, password) {
     try {
       const q = query(
@@ -717,7 +486,6 @@ class AkademikService {
           ...adminDoc.data()
         };
         
-        // Update last login
         await updateDoc(doc(db, this.adminCollection, admin.id), {
           lastLogin: Timestamp.now()
         });
@@ -729,12 +497,11 @@ class AkademikService {
       }
       return null;
     } catch (error) {
-      console.error('Error login admin:', error);
+      
       return null;
     }
   }
   
-  // Get admin by ID
   static async getAdminById(id) {
     try {
       const docRef = doc(db, this.adminCollection, id);
@@ -748,15 +515,13 @@ class AkademikService {
       }
       return null;
     } catch (error) {
-      console.error('Error getting admin:', error);
+      
       return null;
     }
   }
   
-  // Add admin
   static async addAdmin(admin) {
     try {
-      // Check if username already exists
       const existingUsernameQuery = query(
         collection(db, this.adminCollection),
         where('username', '==', admin.username)
@@ -775,12 +540,11 @@ class AkademikService {
       
       return docRef.id;
     } catch (error) {
-      console.error('Error adding admin:', error);
+      
       throw error;
     }
   }
   
-  // Update admin
   static async updateAdmin(id, admin) {
     try {
       const docRef = doc(db, this.adminCollection, id);
@@ -789,12 +553,11 @@ class AkademikService {
         updatedAt: Timestamp.now()
       });
     } catch (error) {
-      console.error('Error updating admin:', error);
+      
       throw error;
     }
   }
   
-  // Get all admin
   static async getAllAdmin() {
     try {
       const q = query(
@@ -808,10 +571,11 @@ class AkademikService {
         ...doc.data()
       }));
     } catch (error) {
-      console.error('Error getting all admin:', error);
+      
       return [];
     }
   }
 }
 
 export default AkademikService;
+

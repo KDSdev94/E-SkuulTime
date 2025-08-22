@@ -13,7 +13,8 @@ import {
   Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthService from '../../../services/AuthService';
+import { useUser } from '../../../context/UserContext';
 import {
   useFonts,
   Nunito_500Medium,
@@ -26,39 +27,49 @@ const { width, height } = Dimensions.get('window');
 
 export default function AdminLogin() {
   const navigation = useNavigation();
+  const { refreshUser } = useUser();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [obscurePassword, setObscurePassword] = useState(true);
 
-  // Load Google Fonts
   let [fontsLoaded] = useFonts({
     Nunito_500Medium,
     Nunito_700Bold,
   });
 
-  // Don't render until fonts are loaded
   if (!fontsLoaded) {
     return null;
   }
 
   const handleLogin = async () => {
     if (!username || !password) {
-      Alert.alert('Error', 'Please fill all fields');
+      Alert.alert('Error', 'Harap isi semua field');
       return;
     }
 
-    // Mock login logic - replace with actual authentication
-    if (username === 'admin.simara' && password === 'simara@2025') {
-      try {
-        await AsyncStorage.setItem('isLoggedIn', 'true');
-        await AsyncStorage.setItem('userType', 'admin');
-        navigation.navigate('AdminDashboard');
-        Alert.alert('Success', 'Login successful!');
-      } catch (error) {
-        Alert.alert('Error', 'Failed to save login state');
+    try {
+      const result = await AuthService.loginAdmin(username, password);
+      
+      if (result.success) {
+        // Validasi bahwa yang login adalah admin murni, bukan kaprodi atau role lain
+        const userRole = result.user?.role || '';
+        if ((userRole === 'admin' || userRole === 'super_admin') && !userRole.includes('kaprodi')) {
+          await refreshUser();
+          
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'AdminDashboard' }],
+          });
+          
+          Alert.alert('Sukses', 'Selamat datang, Admin!');
+        } else {
+          Alert.alert('Error', 'Akun Anda tidak memiliki akses sebagai Admin. Silakan gunakan halaman login yang sesuai.');
+        }
+      } else {
+        Alert.alert('Error', result.message || 'Login gagal');
       }
-    } else {
-      Alert.alert('Error', 'Invalid credentials');
+    } catch (error) {
+      Alert.alert('Error', 'Terjadi kesalahan saat login');
     }
   };
 
@@ -81,11 +92,11 @@ export default function AdminLogin() {
             style={styles.gradientBackground}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatarBackground}>
-                <Image
-                  source={require('../../../assets/logo/logo_nobg.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
+              <Image
+                source={require('../../../assets/logo/admin.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
               </View>
             </View>
             <Text style={styles.headerTitle}>Login Admin</Text>
@@ -111,7 +122,7 @@ export default function AdminLogin() {
             </View>
             
             <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={20} color="rgb(43, 123, 186)" style={styles.inputIcon} />
+              <Ionicons name="lock-closed" size={20} color="rgb(43, 123, 186)" style={styles.inputIcon} />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -128,10 +139,17 @@ export default function AdminLogin() {
                 />
               </TouchableOpacity>
             </View>
+            
+            <TouchableOpacity 
+              style={styles.forgotPasswordLink} 
+              onPress={() => navigation.navigate('ForgotPassword', { userType: 'admin' })}
+            >
+              <Text style={styles.forgotPasswordLinkText}>Lupa Kata Sandi?</Text>
+            </TouchableOpacity>
           </View>
           
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.buttonText}>MASUK</Text>
+            <Text style={styles.buttonText}>LOGIN</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -253,5 +271,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Nunito_700Bold',
     letterSpacing: 1.2,
+  },
+  forgotPasswordLink: {
+    alignItems: 'flex-end',
+    marginTop: -12,
+    marginBottom: 8,
+  },
+  forgotPasswordLinkText: {
+    color: 'rgb(43, 123, 186)',
+    fontSize: 13,
+    fontFamily: 'Nunito_500Medium',
+    textDecorationLine: 'underline',
   },
 });

@@ -1,75 +1,80 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   useFonts,
+  Nunito_400Regular,
   Nunito_600SemiBold,
   Nunito_700Bold,
 } from '@expo-google-fonts/nunito';
+import { useActivity } from '../../../context/ActivityContext';
 
 const primaryColor = 'rgb(43, 123, 186)';
 
-const activities = [
-  {
-    id: 1,
-    icon: 'people-outline',
-    color: primaryColor,
-    title: 'Pembaruan Data Murid',
-    time: '2 menit lalu',
-  },
-  {
-    id: 2,
-    icon: 'school-outline',
-    color: primaryColor,
-    title: 'Profil Guru Diperbarui',
-    time: '15 menit lalu',
-  },
-  {
-    id: 3,
-    icon: 'calendar-outline',
-    color: primaryColor,
-    title: 'Jadwal Mingguan Diterbitkan',
-    time: '1 jam lalu',
-  },
-  {
-    id: 4,
-    icon: 'sync-outline',
-    color: primaryColor,
-    title: 'Sinkronisasi Data Selesai',
-    time: '2 jam lalu',
-  },
-  {
-    id: 5,
-    icon: 'checkmark-circle-outline',
-    color: primaryColor,
-    title: 'Backup Data Selesai',
-    time: '3 jam lalu',
+const getActivityIcon = (title, description) => {
+  const text = (title + ' ' + (description || '')).toLowerCase();
+  
+  if (text.includes('murid') || text.includes('siswa') || text.includes('student')) {
+    return { icon: 'people-outline', color: '#4F46E5', gradientColors: ['#4F46E5', '#6366F1'] }; // Indigo for students
   }
-];
+  if (text.includes('guru') || text.includes('teacher')) {
+    return { icon: 'school-outline', color: '#059669', gradientColors: ['#059669', '#10B981'] }; // Emerald for teachers
+  }
+  if (text.includes('jadwal') || text.includes('schedule')) {
+    return { icon: 'calendar-outline', color: '#DC2626', gradientColors: ['#DC2626', '#EF4444'] }; // Red for schedules
+  }
+  if (text.includes('notif')) {
+    return { icon: 'notifications-outline', color: '#7C3AED', gradientColors: ['#7C3AED', '#8B5CF6'] }; // Violet for notifications
+  }
+  
+  return { icon: 'information-circle-outline', color: primaryColor, gradientColors: [primaryColor, primaryColor] }; // Default
+};
 
-const ActivityItem = ({ item, index }) => (
-  <View style={styles.activityItem}>
-    <View style={styles.activityContent}>
-      <View style={[styles.iconContainer, { backgroundColor: item.color.replace('rgb', 'rgba').replace(')', ', 0.15)') }]}>
-        <Ionicons name={item.icon} size={16} color={item.color} />
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.activityTitle}>{item.title}</Text>
-        <View style={styles.timeContainer}>
-          <Ionicons name="time-outline" size={12} color="#999" />
-          <Text style={styles.activityTime}>{item.time}</Text>
+const ActivityItem = ({ item, index, totalItems, formatTimeAgo }) => {
+  const activityIconData = getActivityIcon(item.title, item.description);
+  const iconColor = item.color || activityIconData.color;
+  const iconName = item.icon || activityIconData.icon;
+  const gradientColors = item.gradientColors || activityIconData.gradientColors || [iconColor, iconColor];
+  
+  const timeAgo = formatTimeAgo ? formatTimeAgo(item.timestamp) : (item.time || 'Baru saja');
+  
+  return (
+    <View style={styles.activityItem}>
+      <View style={styles.activityContent}>
+        <LinearGradient
+          colors={gradientColors}
+          style={styles.iconContainer}
+        >
+          <Ionicons name={iconName} size={20} color='white' />
+        </LinearGradient>
+        <View style={styles.textContainer}>
+          <Text style={styles.activityTitle}>{item.title}</Text>
+          {item.description && (
+            <Text style={styles.activityDescription}>{item.description}</Text>
+          )}
+          <View style={styles.timeContainer}>
+            <Ionicons name="time-outline" size={12} color="#999" />
+            <Text style={styles.activityTime}>{timeAgo}</Text>
+          </View>
+        </View>
+        <View style={styles.statusIndicator}>
+          <LinearGradient
+            colors={gradientColors}
+            style={styles.statusDot}
+          />
         </View>
       </View>
-      <View style={styles.statusIndicator}>
-        <View style={[styles.statusDot, { backgroundColor: item.color }]} />
-      </View>
+      {index < totalItems - 1 && <View style={styles.separator} />}
     </View>
-    {index < 4 && <View style={styles.separator} />}
-  </View>
-);
+  );
+};
 
 export default function RecentActivities() {
+  const { activities, loading, error, formatTimeAgo } = useActivity();
+  
   let [fontsLoaded] = useFonts({
+    Nunito_400Regular,
     Nunito_600SemiBold,
     Nunito_700Bold,
   });
@@ -78,16 +83,45 @@ export default function RecentActivities() {
     return null;
   }
 
+  const handleRefresh = () => {
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Aktivitas Terbaru</Text>
-        <Ionicons name="refresh" size={20} color="#666" />
+        <TouchableOpacity onPress={handleRefresh}>
+          <Ionicons name="refresh" size={20} color="#666" />
+        </TouchableOpacity>
       </View>
+      
       <View style={styles.activitiesContainer}>
-        {activities.map((activity, index) => (
-          <ActivityItem key={activity.id} item={activity} index={index} />
-        ))}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={primaryColor} />
+            <Text style={styles.loadingText}>Memuat aktivitas...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle-outline" size={24} color="#EF4444" />
+            <Text style={styles.errorText}>Error: {error}</Text>
+          </View>
+        ) : activities.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="document-outline" size={32} color="#999" />
+            <Text style={styles.emptyText}>Belum ada aktivitas</Text>
+          </View>
+        ) : (
+          activities.map((activity, index) => (
+            <ActivityItem 
+              key={activity.id} 
+              item={activity} 
+              index={index} 
+              totalItems={activities.length}
+              formatTimeAgo={formatTimeAgo}
+            />
+          ))
+        )}
       </View>
     </View>
   );
@@ -127,9 +161,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -141,6 +175,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Nunito_600SemiBold',
     color: '#2d3748',
+    marginBottom: 2,
+  },
+  activityDescription: {
+    fontSize: 12,
+    fontFamily: 'Nunito_400Regular',
+    color: '#718096',
     marginBottom: 4,
   },
   timeContainer: {
@@ -166,5 +206,40 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#f7fafc',
     marginLeft: 44,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    fontSize: 14,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#718096',
+    marginLeft: 8,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#EF4444',
+    marginLeft: 8,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#999',
+    marginTop: 8,
   },
 });

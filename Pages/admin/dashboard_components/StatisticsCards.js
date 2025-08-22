@@ -34,7 +34,7 @@ const StatCard = ({ icon, title, value, subtitle, iconColor, gradientColors }) =
   );
 };
 
-export default function StatisticsCards({ dashboardStats }) {
+export default function StatisticsCards({ dashboardStats, userRole }) {
   let [fontsLoaded] = useFonts({
     Nunito_600SemiBold,
     Nunito_700Bold,
@@ -49,21 +49,28 @@ export default function StatisticsCards({ dashboardStats }) {
   return (
     <View style={styles.container}>
       <StatCard
-        icon="people-outline"
-        title="Total Murid"
-        value={dashboardStats.totalMurid || 0}
-        subtitle={`${dashboardStats.muridAktif || 0} Aktif`}
-        iconColor={primaryColor}
-        gradientColors={['#667eea', '#764ba2']}
+        icon="bar-chart-outline"
+        title="Data Kelas"
+        value={dashboardStats.totalKelas || 0}
+        subtitle=""
+        iconColor="#4F46E5"
+        gradientColors={['#4F46E5', '#6366F1']}
       />
-      <View style={{ width: 16 }} />
       <StatCard
         icon="school-outline"
         title="Total Guru"
         value={dashboardStats.totalGuru || 0}
         subtitle={`${dashboardStats.guruAktif || 0} Aktif`}
-        iconColor={primaryColor}
-        gradientColors={['#f093fb', '#f5576c']}
+        iconColor="#059669"
+        gradientColors={['#059669', '#10B981']}
+      />
+      <StatCard
+        icon="calendar-outline"
+        title="Total Jadwal"
+        value={dashboardStats.totalJadwal || 0}
+        subtitle=""
+        iconColor="#DC2626"
+        gradientColors={['#DC2626', '#EF4444']}
       />
     </View>
   );
@@ -72,12 +79,14 @@ export default function StatisticsCards({ dashboardStats }) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   statCard: {
-    flex: 1,
+    width: '31%',
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
+    padding: 12,
     elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },

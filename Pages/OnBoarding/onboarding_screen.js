@@ -8,9 +8,9 @@ import {
   Animated,
   PanResponder,
   Image,
-  SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,12 +29,11 @@ import * as SplashScreen from 'expo-splash-screen';
 
 const { width, height } = Dimensions.get('window');
 
-// OnboardingData class equivalent
 const onboardingData = [
   {
-    title: 'Selamat Datang di SIMARA',
+    title: 'Selamat Datang di E-SkuulTime',
     description:
-      'Sistem Administrasi SMK Ma\'arif NU 1 Wanasari untuk memudahkan administrasi sekolah.',
+      'Sistem Informasi Penjadwalan SMK Ma\'arif NU 1 Wanasari untuk memudahkan manajemen jadwal sekolah.',
     color: '#4CAF50',
     backgroundColor: 'rgba(121, 204, 186, 1)',
     image: require('../../assets/image/onboard1.png'),
@@ -50,7 +49,7 @@ const onboardingData = [
   {
     title: 'Jadwal Pembelajaran',
     description:
-      'Atur jadwal pelajaran dan jadwal mengajar dengan efisien. Kelola waktu pembelajaran dengan optimal.',
+      'Atur jadwal pelajaran dengan efisien. Kelola waktu pembelajaran dengan optimal.',
     color: '#F44336',
     backgroundColor: '#FED4D5',
     image: require('../../assets/image/onboard3.png'),
@@ -60,7 +59,6 @@ const onboardingData = [
 export default function OnboardingScreen() {
   const navigation = useNavigation();
   
-  // Load Google Fonts - MUST be called first
   let [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_600SemiBold,
@@ -73,13 +71,11 @@ export default function OnboardingScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
   
-  // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
   useEffect(() => {
     if (fontsLoaded) {
-      // Initial animation
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -95,7 +91,6 @@ export default function OnboardingScreen() {
     }
   }, [fontsLoaded]);
 
-  // Animate when page changes
   useEffect(() => {
     fadeAnim.setValue(0);
     slideAnim.setValue(50);
@@ -136,7 +131,7 @@ export default function OnboardingScreen() {
       await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
       navigation.navigate('PilihLogin');
     } catch (error) {
-      console.error('Error saving onboarding completion status:', error);
+      
       navigation.navigate('PilihLogin');
     }
   };
@@ -151,7 +146,6 @@ export default function OnboardingScreen() {
     itemVisiblePercentThreshold: 50,
   }).current;
 
-  // Show loading indicator while fonts load
   if (!fontsLoaded) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -237,11 +231,11 @@ export default function OnboardingScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: onboardingData[currentPage].color }]}>
-            SIMARA
+            E-SkuulTime
           </Text>
           <TouchableOpacity onPress={navigateToLogin} style={styles.skipButton}>
             <Text style={[styles.skipText, { color: onboardingData[currentPage].color }]}>

@@ -13,7 +13,8 @@ import {
   Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthService from '../../../services/AuthService';
+import { useUser } from '../../../context/UserContext';
 import {
   useFonts,
   Nunito_500Medium,
@@ -26,44 +27,64 @@ const { width, height } = Dimensions.get('window');
 
 export default function GuruLogin() {
   const navigation = useNavigation();
+  
+const { refreshUser } = useUser();
+
+const handleNavigation = (route) => {
+    try {
+      if (navigation && navigation.navigate) {
+        navigation.navigate(route);
+      } else {
+        setTimeout(() => handleNavigation(route), 100);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [obscurePassword, setObscurePassword] = useState(true);
 
-  // Load Google Fonts
   let [fontsLoaded] = useFonts({
     Nunito_500Medium,
     Nunito_700Bold,
   });
 
-  // Don't render until fonts are loaded
   if (!fontsLoaded) {
     return null;
   }
 
   const handleLogin = async () => {
     if (!username || !password) {
-      Alert.alert('Error', 'Please fill all fields');
+      Alert.alert('Error', 'Harap isi semua field');
       return;
     }
 
-    // Mock login logic - replace with actual authentication
-    if (username === 'guru.simara' && password === 'simara@guru') {
-      try {
-        await AsyncStorage.setItem('isLoggedIn', 'true');
-        await AsyncStorage.setItem('userType', 'guru');
-        navigation.navigate('GuruDashboard');
-        Alert.alert('Success', 'Login successful!');
-      } catch (error) {
-        Alert.alert('Error', 'Failed to save login state');
+    try {
+      const result = await AuthService.loginGuru(username, password);
+      
+      if (result.success) {
+        // Navigate to dashboard and reset stack
+await refreshUser();
+        
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'GuruDashboard' }],
+        });
+        
+        Alert.alert('Sukses', `Login berhasil! Selamat datang, ${result.user.namaLengkap || 'Guru'}.`);
+      } else {
+        Alert.alert('Error', result.message || 'Username atau password salah');
       }
-    } else {
-      Alert.alert('Error', 'Invalid credentials');
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Error', 'Terjadi kesalahan saat login');
     }
   };
 
   const keyboardVerticalOffset = Platform.OS === "ios" ? 60 : 0;
-  
+
   return (
     <KeyboardAvoidingView 
       style={styles.keyboardContainer}
@@ -77,12 +98,12 @@ export default function GuruLogin() {
       >
         <View style={styles.headerContainer}>
           <LinearGradient
-            colors={['rgb(84, 84, 82)', 'rgb(34, 34, 32)']}
+            colors={['rgb(124, 58, 237)', 'rgb(168, 85, 247)']} // Purple gradient theme for teacher
             style={styles.gradientBackground}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatarBackground}>
                 <Image
-                  source={require('../../../assets/logo/logo_nobg.png')}
+                  source={require('../../../assets/icon/teachericon.jpg')}
                   style={styles.logoImage}
                   resizeMode="contain"
                 />
@@ -99,7 +120,7 @@ export default function GuruLogin() {
           
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Ionicons name="person" size={20} color="rgb(34, 34, 32)" style={styles.inputIcon} />
+              <Ionicons name="person" size={20} color="rgb(124, 58, 237)" style={styles.inputIcon} />
               <TextInput
                 value={username}
                 onChangeText={setUsername}
@@ -111,7 +132,7 @@ export default function GuruLogin() {
             </View>
             
             <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={20} color="rgb(34, 34, 32)" style={styles.inputIcon} />
+              <Ionicons name="lock-closed" size={20} color="rgb(124, 58, 237)" style={styles.inputIcon} />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -124,14 +145,25 @@ export default function GuruLogin() {
                 <Ionicons 
                   name={obscurePassword ? "eye-off" : "eye"} 
                   size={20} 
-                  color="rgb(34, 34, 32)" 
+                  color="rgb(124, 58, 237)" 
                 />
               </TouchableOpacity>
             </View>
+            
+            <TouchableOpacity 
+              style={styles.forgotPasswordLink} 
+              onPress={() => navigation.navigate('ForgotPassword', { userType: 'guru' })}
+            >
+              <Text style={styles.forgotPasswordLinkText}>Lupa Kata Sandi?</Text>
+            </TouchableOpacity>
           </View>
-          
+
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.buttonText}>MASUK</Text>
+            <Text style={styles.buttonText}>LOGIN</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.registerButton} onPress={() => handleNavigation('RegisterGuru')}>
+            <Text style={styles.registerButtonText}>REGISTER</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -168,7 +200,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    backgroundColor: 'rgba(124, 58, 237, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -237,21 +269,59 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginButton: {
-    backgroundColor: 'rgb(34, 34, 32)',
+    backgroundColor: 'rgb(124, 58, 237)',
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
     height: 52,
     elevation: 5,
-    shadowColor: 'rgb(34, 34, 32)',
+    shadowColor: 'rgb(124, 58, 237)',
     shadowOpacity: 0.5,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
+    marginBottom: 12,
+  },
+  registerButton: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 52,
+    borderWidth: 2,
+    borderColor: 'rgb(124, 58, 237)',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontFamily: 'Nunito_700Bold',
     letterSpacing: 1.2,
+  },
+  registerButtonText: {
+    color: 'rgb(124, 58, 237)',
+    fontSize: 16,
+    fontFamily: 'Nunito_700Bold',
+    letterSpacing: 1.2,
+  },
+  forgotPasswordButton: {
+    marginTop: 16,
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  forgotPasswordText: {
+    color: 'rgb(124, 58, 237)',
+    fontSize: 14,
+    fontFamily: 'Nunito_500Medium',
+    textDecorationLine: 'underline',
+  },
+  forgotPasswordLink: {
+    alignItems: 'flex-end',
+    marginTop: -12,
+    marginBottom: 8,
+  },
+  forgotPasswordLinkText: {
+    color: 'rgb(124, 58, 237)',
+    fontSize: 13,
+    fontFamily: 'Nunito_500Medium',
+    textDecorationLine: 'underline',
   },
 });

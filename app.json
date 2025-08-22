@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "SIMARA",
-    "slug": "simara",
+    "name": "E-SkuulTime",
+    "slug": "e-skuultime",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/logo/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/logo/logo_nobg.png",
       "resizeMode": "contain",
       "backgroundColor": "#1e3a8a"
     },
@@ -18,7 +18,7 @@
     "android": {
       "package": "id.sch.smkmaarifnu1wanasari",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo/logo_nobg.png",
+        "foregroundImage": "./assets/logo/logo.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -26,16 +26,25 @@
       ],
       "versionCode": 1
     },
-    "web": {
-      "favicon": "./assets/logo.png"
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#1e3a8a",
+      "translucent": true
     },
-    "extra": {
-      "eas": {
-        "projectId": "27a30e64-f7f2-4ba7-93ea-28ccf373aade"
-      }
+    "web": {
+      "favicon": "./assets/logo/logo.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "owner": "estehbae1",
+    "extra": {
+      "eas": {
+        "projectId": "65408905-148e-4286-a50d-e730f2585e3c"
+      }
+    }
   }
 }

@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import PermissionService from '../../../services/PermissionService';
+import AuthService from '../../../services/AuthService';
+import { getAdminTheme } from '../../../styles/dashboardThemes';
+import { isKaprodi } from '../../../utils/roleUtils';
 import {
   useFonts,
   Nunito_600SemiBold,
@@ -10,13 +14,11 @@ import {
 
 const schoolIcon = require('../../../assets/icon/school.png');
 
-// Helper functions to get current academic info
 const getCurrentAcademicYear = () => {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
   
-  // Academic year typically starts in July
   if (currentMonth >= 7) {
     return `${currentYear}/${currentYear + 1}`;
   } else {
@@ -28,7 +30,6 @@ const getCurrentSemester = () => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   
-  // Semester Ganjil: July - December, Semester Genap: January - June
   if (currentMonth >= 1 && currentMonth <= 6) {
     return 'Genap';
   } else {
@@ -37,18 +38,56 @@ const getCurrentSemester = () => {
 };
 
 export default function WelcomeCard() {
+  const [userRole, setUserRole] = useState('');
+  const [userName, setUserName] = useState('');
+  const [loading, setLoading] = useState(true);
+
   let [fontsLoaded] = useFonts({
     Nunito_600SemiBold,
     Nunito_700Bold,
   });
 
-  if (!fontsLoaded) {
+  useEffect(() => {
+    loadUserInfo();
+  }, []);
+
+  const loadUserInfo = async () => {
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      if (currentUser.isLoggedIn && currentUser.userData) {
+        const role = currentUser.userData.role;
+        const name = currentUser.userData.namaLengkap || 'Admin';
+        setUserRole(role);
+        setUserName(name);
+      }
+    } catch (error) {
+      console.error('Error loading user info:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getWelcomeMessage = () => {
+    if (!userRole) return 'Selamat Datang, Admin!';
+    
+    const roleName = PermissionService.getRoleName(userRole);
+    return `Selamat Datang, ${roleName}!`;
+  };
+
+  const getUserDisplayName = () => {
+    return userName || 'Admin';
+  };
+
+  if (!fontsLoaded || loading) {
     return null; // Or a loading placeholder
   }
 
+const currentTheme = getAdminTheme(userRole);
+  const gradientColors = isKaprodi(userRole) ? ['#FF5733', '#C70039'] : ['#507FC4', '#2B7BBA'];
+
   return (
     <LinearGradient
-      colors={['rgb(80, 160, 220)', 'rgb(43, 123, 186)', 'rgb(30, 100, 160)']}
+colors={gradientColors}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}
@@ -64,9 +103,10 @@ export default function WelcomeCard() {
         <View style={styles.textContainer}>
           <View style={styles.greetingContainer}>
             <Ionicons name="hand-left" size={20} color="#FFD700" style={styles.waveIcon} />
-            <Text style={styles.title}>Selamat Datang, Admin!</Text>
+            <Text style={styles.title}>{getWelcomeMessage()}</Text>
           </View>
-          <Text style={styles.subtitle}>SMK Ma'arif NU 1 Wanasari</Text>
+          <Text style={styles.subtitle}>{getUserDisplayName()}</Text>
+          <Text style={styles.schoolName}>SMK Ma'arif NU 1 Wanasari</Text>
           <View style={styles.academicInfo}>
             <Ionicons name="calendar" size={14} color="rgba(255, 255, 255, 0.8)" />
             <Text style={styles.schoolYear}>Tahun Ajaran {getCurrentAcademicYear()} - Semester {getCurrentSemester()}</Text>
@@ -151,9 +191,15 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'Nunito_600SemiBold',
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 2,
+  },
+  schoolName: {
+    fontSize: 12,
+    fontFamily: 'Nunito_600SemiBold',
+    color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 6,
   },
   academicInfo: {

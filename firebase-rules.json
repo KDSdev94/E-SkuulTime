@@ -1,0 +1,48 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+    
+    "activities": {
+      ".indexOn": ["timestamp", "userId"],
+      "$activityId": {
+        ".validate": "newData.hasChildren(['timestamp', 'title', 'description']) && newData.child('timestamp').isString()"
+      }
+    },
+    
+    "notifications": {
+      ".indexOn": ["userId", "createdAt", "read", "type", "senderType", "senderId", "targetUserType", "targetJurusan"],
+      "$notificationId": {
+        ".validate": "newData.hasChildren(['message', 'read']) && newData.child('message').isString() && newData.child('read').isBoolean() && (newData.child('userId').isString() || newData.child('targetJurusan').isString())"
+      }
+    },
+    
+    "guru": {
+      ".indexOn": ["username", "email", "nip"],
+      "$guruId": {
+        ".validate": "newData.hasChildren(['namaLengkap', 'nip']) && newData.child('namaLengkap').isString() && newData.child('nip').isString()"
+      }
+    },
+    
+    "murid": {
+      ".indexOn": ["username", "email", "nis", "kelas"],
+      "$muridId": {
+        ".validate": "newData.hasChildren(['namaLengkap', 'nis']) && newData.child('namaLengkap').isString() && newData.child('nis').isString()"
+      }
+    },
+    
+    "kelas": {
+      ".indexOn": ["namaKelas"],
+      "$kelasId": {
+        ".validate": "newData.hasChildren(['tingkat', 'jurusan', 'nomor', 'namaKelas']) && newData.child('tingkat').isString() && newData.child('jurusan').isString() && newData.child('nomor').isNumber() && newData.child('namaKelas').isString()"
+      }
+    },
+    
+    "jadwal": {
+      ".indexOn": ["namaKelas", "hari", "jamKe", "guruId"],
+      "$jadwalId": {
+        ".validate": "newData.hasChildren(['namaMataPelajaran', 'namaKelas', 'hari']) && newData.child('namaMataPelajaran').isString() && newData.child('namaKelas').isString() && newData.child('hari').isString()"
+      }
+    }
+  }
+}

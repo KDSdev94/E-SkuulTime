@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
   Image,
+  Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,20 +25,48 @@ const { width, height } = Dimensions.get('window');
 
 export default function PilihLogin() {
   const navigation = useNavigation();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
 
-  // Load Google Fonts
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  
+
+  const handleNavigation = (route) => {
+    try {
+      if (navigation && navigation.navigate) {
+        navigation.navigate(route);
+      } else {
+        setTimeout(() => handleNavigation(route), 100);
+      }
+    } catch (error) {
+    }
+  };
+
   let [fontsLoaded] = useFonts({
     Poppins_700Bold,
     Nunito_500Medium,
     Nunito_700Bold,
   });
 
-  // Don't render until fonts are loaded
   if (!fontsLoaded) {
     return null;
   }
 
-    const modernLoginCard = ({ icon, label, color, textColor, shadowColor, onPress }) => {
+    const modernLoginCard = ({ icon, label, color, textColor, shadowColor, onPress, iconName }) => {
     const finalTextColor = textColor || color;
     const finalShadowColor = shadowColor || color;
     return (
@@ -45,18 +74,22 @@ export default function PilihLogin() {
         style={[
           styles.loginCard,
           {
-                        shadowColor: finalShadowColor,
-            shadowOpacity: 0.2,
-            shadowOffset: { width: 0, height: 8 },
-            shadowRadius: 15,
-            elevation: 8,
+            shadowColor: finalShadowColor,
+            shadowOpacity: 0.15,
+            shadowOffset: { width: 0, height: 4 },
+            shadowRadius: 12,
+            elevation: 6,
           },
         ]}
         onPress={onPress}
         activeOpacity={0.8}
       >
         <View style={[styles.iconContainer, { backgroundColor: color.replace('1)', '0.1)') }]}>
-          <Image source={icon} style={styles.icon} resizeMode="contain" />
+          {icon ? (
+            <Image source={icon} style={styles.icon} resizeMode="contain" />
+          ) : (
+            <Ionicons name={iconName || "school"} size={40} color={color} />
+          )}
         </View>
         <Text style={[styles.cardLabel, { color: finalTextColor }]}>{label}</Text>
         <Ionicons name="chevron-forward" size={20} color={finalTextColor} />
@@ -95,9 +128,9 @@ export default function PilihLogin() {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.appTitle}>SIMARA</Text>
+            <Text style={styles.appTitle}>E-SkuulTime</Text>
             <Text style={styles.appSubtitle}>
-              Sistem Informasi Administrasi{"\n"}SMK Ma'arif NU 1 Wanasari
+              Sistem Informasi Penjadwalan{"\n"}SMK Ma'arif NU 1 Wanasari
             </Text>
           </View>
 
@@ -110,34 +143,45 @@ export default function PilihLogin() {
               icon: require('../../assets/logo/student.png'),
               label: 'Murid',
               color: 'rgba(36, 200, 150, 1)',
-                            textColor: 'rgb(108, 212, 127)',
+              textColor: 'rgb(108, 212, 127)',
               shadowColor: 'rgb(108, 212, 127)',
-              onPress: () => navigation.navigate('MuridLogin'),
+              onPress: () => handleNavigation('MuridLogin'),
             })}
 
             {modernLoginCard({
               icon: require('../../assets/icon/teachericon.jpg'),
               label: 'Guru',
-              color: 'rgba(55, 232, 173, 1)',
-                            textColor: 'rgb(34, 34, 32)',
-              shadowColor: 'rgb(34, 34, 32)',
-              onPress: () => navigation.navigate('GuruLogin'),
+              color: 'rgba(124, 58, 237, 1)',
+              textColor: 'rgb(124, 58, 237)',
+              shadowColor: 'rgb(124, 58, 237)',
+              onPress: () => handleNavigation('GuruLogin'),
             })}
 
             {modernLoginCard({
               icon: require('../../assets/logo/admin.png'),
               label: 'Admin',
               color: 'rgba(90, 90, 255, 1)',
-                            textColor: 'rgb(43, 123, 186)',
+              textColor: 'rgb(43, 123, 186)',
               shadowColor: 'rgb(43, 123, 186)',
-              onPress: () => navigation.navigate('AdminLogin'),
+              onPress: () => handleNavigation('AdminLogin'),
+            })}
+
+            {modernLoginCard({
+              icon: require('../../assets/logo/admin.png'),
+              label: 'Kaprodi',
+              color: 'rgba(90, 90, 255, 1)',
+              textColor: 'rgb(43, 123, 186)',
+              shadowColor: 'rgb(43, 123, 186)',
+              onPress: () => handleNavigation('KaprodiLogin'),
             })}
           </View>
+
 
           {/* Footer */}
           <Text style={styles.footer}>© 2025 SMK Ma'arif NU 1 Wanasari</Text>
         </View>
       </SafeAreaView>
+      
     </View>
   );
 }
@@ -165,65 +209,67 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 30,
     paddingHorizontal: 20,
   },
   logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
+    width: 100,
+    height: 100,
+    marginBottom: 15,
   },
   appTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontFamily: 'Poppins_700Bold',
     color: 'rgb(43, 123, 186)',
     letterSpacing: 1.2,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   appSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Nunito_500Medium',
     color: '#666',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   pageTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: 'Nunito_700Bold',
     color: '#37474f',
-    marginBottom: 20,
+    marginBottom: 15,
     paddingHorizontal: 20,
   },
   loginOptions: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     width: '100%',
+    paddingVertical: 10,
   },
   loginCard: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    marginBottom: 20,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 72,
   },
   iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 20,
+    marginRight: 16,
   },
   icon: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
   },
   cardLabel: {
     flex: 1,
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: 'Nunito_700Bold',
   },
   footer: {

@@ -6,14 +6,13 @@ import {
   Animated,
   Dimensions,
   Image,
-  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SafeStatusBar } from '../utils/statusBarUtils';
 
 const { width, height } = Dimensions.get('window');
 
-export default function LoadingScreen({ message = "Loading SIMARA..." }) {
-  // Animation references
+export default function LoadingScreen({ message = "Loading E-SkuulTime..." }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -21,7 +20,6 @@ export default function LoadingScreen({ message = "Loading SIMARA..." }) {
   const dotsAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Initial entrance animation
     Animated.sequence([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -35,7 +33,6 @@ export default function LoadingScreen({ message = "Loading SIMARA..." }) {
       }),
     ]).start();
 
-    // Continuous pulse animation for logo
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -51,7 +48,6 @@ export default function LoadingScreen({ message = "Loading SIMARA..." }) {
       ])
     ).start();
 
-    // Continuous rotation animation for loading ring
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
@@ -60,7 +56,6 @@ export default function LoadingScreen({ message = "Loading SIMARA..." }) {
       })
     ).start();
 
-    // Continuous dots animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(dotsAnim, {
@@ -109,7 +104,7 @@ export default function LoadingScreen({ message = "Loading SIMARA..." }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
+      <SafeStatusBar style="light" hidden={true} />
       
       {/* Background Gradient */}
       <LinearGradient
@@ -163,8 +158,8 @@ export default function LoadingScreen({ message = "Loading SIMARA..." }) {
         </View>
 
         {/* App Name */}
-        <Text style={styles.appName}>SIMARA</Text>
-        <Text style={styles.appSubtitle}>Sistem Administrasi SMK Ma'arif NU 1 Wanasari</Text>
+        <Text style={styles.appName}>E-SkuulTime</Text>
+        <Text style={styles.appSubtitle}>Sistem Informasi Penjadwalan SMK Ma'arif NU 1 Wanasari</Text>
 
         {/* Loading Message */}
         <View style={styles.loadingTextContainer}>
@@ -234,7 +229,7 @@ const styles = StyleSheet.create({
     height: 80,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(148,203,110,255)',
     borderRadius: 40,
     shadowColor: '#000',
     shadowOffset: {
